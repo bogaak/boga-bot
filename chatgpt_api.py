@@ -47,23 +47,6 @@ async def generate_chatgpt_response(user_id: int, query: str):
     except Exception as err:
         return "There was an issue with your query, please try again later.", err
 
-def generate_image(user_id: int, query: str):
-
-    try:
-        response = client.images.generate(
-            model="dall-e-3",
-            prompt=query,
-            size="1024x1024",
-            quality="standard",
-            n=1,
-        )
-        sql_queries.log_cost(user_id, "image", IMG_COST)
-
-        image_url = response.data[0].url
-        return image_url, None
-    except Exception as err:
-        return "There was an error generating your image, please try again later.", err
-
 def gen_image_gpt(user_id: int, query: str):
     try:
         img = client.images.generate(
@@ -71,8 +54,10 @@ def gen_image_gpt(user_id: int, query: str):
             prompt=query,
             n=1,
             size="1024x1024",
+            moderation="low",
             quality="low", # medium is pretty much same as old gen cost. 
         )
+
 
         image_bytes = base64.b64decode(img.data[0].b64_json)
         sql_queries.log_cost(user_id, "image", IMG_COST)
