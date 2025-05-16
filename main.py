@@ -193,6 +193,12 @@ async def current_weather(ctx, *, args):
 async def image(ctx, *, args):
   await ctx.defer()
   response, err = chatgpt_api.gen_image_gpt(ctx.author.id, args)
+
+  if err:
+    global debug_channel
+    await debug_channel.send("Error: {0}".format(err))
+    await ctx.send(response)
+    return
   
   random_uuid = uuid.uuid4()
   
@@ -200,9 +206,7 @@ async def image(ctx, *, args):
   await ctx.send(file=file)
 
   sql_queries.log_command("image")
-  if err:
-    global debug_channel
-    await debug_channel.send("Error: {0}".format(err))
+  
 
 
 @bot.hybrid_command(name="bill", description="Get the current bill for the user. If no user is specified, it will default to the author.")
@@ -254,6 +258,9 @@ async def roast_jiawei(ctx):
 
 @bot.hybrid_command(name="roll", description="Roll for Boga Bucks, once a day.")
 async def roll(ctx):
+  if ctx.author.id == consts.JIAWEI_ID:
+    await ctx.send("You cannot roll for Boga Bucks, finish the Japan video first <@!{0}>!!".format(consts.JIAWEI_ID))
+    return
   random_number = random.randint(0, 5)
   response = sql_queries.apply_roll(ctx.author.id, random_number)
   await ctx.send(response)
@@ -287,6 +294,9 @@ async def ride_the_bus(ctx, bet: int):
   # lastly guess the suit to get 20x. independent of previous cards. 
 
   # Before we do anything though, check if bet is within bounds.
+  if ctx.author.id == consts.JIAWEI_ID:
+    await ctx.send("You cannot bet for Boga Bucks, finish the Japan video first <@!{0}>!!".format(consts.JIAWEI_ID))
+    return
 
   bet = math.ceil(bet) 
   balance = sql_queries.get_boga_bucks(ctx.author.id)
@@ -459,6 +469,16 @@ async def features(ctx):
   await ctx.send("Check https://github.com/jycor/boga_bot/issues for feature requests. You can also ping Alex.")
   sql_queries.log_command("features")
 
+@bot.hybrid_command(name="laugh", description="Minion laugh.")
+async def laugh(ctx):
+  await ctx.send("https://tenor.com/view/minion-minion-laughing-minion-popcorn-wriogifs-gif-10648794811524455015")
+  sql_queries.log_command("laugh")
+
+@bot.hybrid_command(name="blaugh", description="Minion laugh 4K 1440P.")
+async def blaugh(ctx):
+  await ctx.send("https://tenor.com/view/bahaha-lol-hd-gif-minion-minion-laugh-gif-2154867417577880306")
+  sql_queries.log_command("blaugh")
+
 @bot.event
 async def on_message(message):
   # ignore messages from the bot
@@ -500,7 +520,15 @@ async def on_message(message):
         sql_queries.reset_rolls()
         await message.channel.send("Reset time, everyone can reroll again!")
       return
+  
+  if message.content == "https://tenor.com/view/minion-minion-laughing-minion-popcorn-wriogifs-gif-10648794811524455015":
+    await message.channel.send("https://tenor.com/view/minion-minion-laughing-minion-popcorn-wriogifs-gif-10648794811524455015")
+    return
 
+  if message.content == "https://tenor.com/view/bahaha-lol-hd-gif-minion-minion-laugh-gif-2154867417577880306":
+    await message.channel.send("https://tenor.com/view/bahaha-lol-hd-gif-minion-minion-laugh-gif-2154867417577880306")
+    return
+  
   # ignore messages that don't mention the bot
   if not bot.user.mentioned_in(message):
     return
