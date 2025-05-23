@@ -3,10 +3,10 @@ name: Auto Deploy Bot
 on:
   push:
     branches:
-      - alexkumar520/auto-deploy
+      - main
   pull_request:
     branches:
-      - alexkumar520/auto-deploy
+      - main
 
 jobs:
   deploy:
