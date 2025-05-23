@@ -1,4 +1,0 @@
-steps:
-  - name: 'gcr.io/cloud-builders/git'
-    dir: 'test-temp'  # This is relative to the Cloud Build workspace (/workspace)
-    args: ['clone', 'https://github.com/bogaak/boga-bot.git', '.']
