@@ -13,6 +13,12 @@ jobs:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true)
     runs-on: self-hosted
     steps:
-      - run: cd ~/
-      - run: touch test-deploy-2.txt
+        - run: touch test-11.txt
+        - run: cd boga-bot
+        - run: git pull origin main
+        - run: cd ..
+        - run: touch test-22.txt
+        # probably should just make all the above run in 1 script in the file, and make this just run the script from here. 
+        
+      
       
