@@ -14,7 +14,8 @@ jobs:
     runs-on: self-hosted
     steps:
         - run: echo "Deploying the bot..."
+
         - run: |
-            nohup ./start_bot.sh &
-            disown
+            $env:RUNNER_TRACKING_ID=""
+            nohup ./start_bot.sh & 
         
