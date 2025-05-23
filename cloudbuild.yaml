@@ -1,0 +1,4 @@
+steps:
+  - name: 'gcr.io/cloud-builders/git'
+    dir: 'my-folder'  # This is relative to the Cloud Build workspace (/workspace)
+    args: ['clone', 'https://github.com/bogaak/boga-bot.git', '.']
