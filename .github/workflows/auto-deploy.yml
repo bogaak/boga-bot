@@ -1,0 +1,19 @@
+name: Auto Deploy Bot
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true)
+    runs-on: self-hosted
+    steps:
+        - run: echo "Deploying the bot..."
+
+        - run: RUNNER_TRACKING_ID="" && (nohup ./start_bot.sh&) 
+        
