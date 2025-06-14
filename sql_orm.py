@@ -1,7 +1,10 @@
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker, declarative_base
-from models import Boga_Bucks, Costs, Track_Roll
+from models import Boga_Bucks, Costs, Track_Roll, Usage
 from datetime import datetime
+
+PROG_CHR = "*"
+MISS_CHR = "-"
 
 Base = declarative_base()
 
@@ -87,7 +90,7 @@ def add_boga_bucks(user_id: int, amount: int):
 def get_leaderboard():
     session = Session()
     
-    users = session.query(Boga_Bucks).all()
+    users = session.query(Boga_Bucks).order_by(Boga_Bucks.boga_bucks.desc()).all()
 
     if not users:
         return "Nobody has rolled yet!"
@@ -102,7 +105,7 @@ def get_leaderboard():
 
     return response
 
-def generate_user_bull(user_id: int, month=None, year=None):
+def generate_user_bill(user_id: int, month=None, year=None):
     session = Session()
 
     start_date = datetime(year=year, month=month, day=1)
@@ -115,3 +118,83 @@ def generate_user_bull(user_id: int, month=None, year=None):
         Costs.date >= start_date, 
         Costs.date <= end_date
     ).first()
+
+    if not bill:
+        return "You owe 0 dollars!"
+
+    total_cost = bill[0]
+    
+    session.close()
+
+    return "<@!{}> owes `${}` for `{}/{}`".format(user_id, total_cost, month, year)
+
+def generate_statement():
+    session = Session()
+
+    results = (
+        session.query(
+            Costs.user_id,
+            func.sum(Costs.cost).label('total_cost')
+        )
+        .group_by(Costs.user_id)
+        .order_by(
+            func.sum(Costs.cost).desc(),
+            Costs.user_id
+        )
+        .all()
+    )
+
+    if len(results) == 0:
+        return "Nobody has used the bot yet"
+
+    res = "# Statement Summary starting from 04/2024\n\n"
+
+    total = 0
+    for row in results:
+        tmp = "<@!{}> owes `${}`\n".format(row[0], row[1])
+        res += tmp
+        total += row[1]
+    
+    res += "\nTotal: `${}`".format(total)
+
+    session.close()
+
+    return res
+
+def log_command(command: str):
+    session = Session()
+
+    command_count = session.query(Usage).filter(Usage.command == command).first()
+
+    if not command_count:
+        new_usage = Usage(command=command, count=0)
+        session.add(new_usage)
+        session.commit()
+
+    command = session.query(Usage).filter(Usage.command == command).first()
+
+    command.count += 1
+
+    session.commit()
+    session.close()
+
+def get_command_usage():
+    session = Session()
+
+    commands = session.query(Usage).order_by(Usage.count.desc(), Usage.command.asc()).all()
+    
+    total = session.query(func.sum(Usage.count)).scalar()
+    
+    res = "```"
+
+    for row in commands:
+        
+        percent = round((row.count / total) * 100, 2)
+        progress = round((row.count / total) * 10)
+        progress_bar = (PROG_CHR * progress) + (MISS_CHR * (10 - progress))
+
+        res += "/{:15} [{}] {}%\n".format(row.command, progress_bar, str(percent))
+    
+    res += "```"
+
+    return res

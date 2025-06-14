@@ -21,3 +21,8 @@ class Track_Roll(Base):
     user_id = Column(Integer, primary_key=True)
     roll = Column(Integer)
     streak = Column(Integer, default=0)
+
+class Usage(Base):
+    __tablename__ = "usage"
+    command = Column(Text, primary_key=True)
+    count = Column(Integer)

@@ -1,6 +1,6 @@
 from openai import OpenAI
 from consts import OPENAI_API_KEY
-import sql_queries
+from sql_orm import log_cost
 import base64
 
 client = OpenAI(
@@ -33,7 +33,7 @@ async def generate_chatgpt_response(user_id: int, query: str):
         completion_cost =  INPUT_TOKEN_COST * gpt_response.usage.completion_tokens
         prompt_cost = OUTPUT_TOKEN_COST * gpt_response.usage.prompt_tokens
 
-        sql_queries.log_cost(user_id, "text", completion_cost + prompt_cost)
+        log_cost(user_id, "text", completion_cost + prompt_cost)
 
         response = gpt_response.choices[0].message.content
 
@@ -58,9 +58,8 @@ def gen_image_gpt(user_id: int, query: str):
             quality="low", # medium is pretty much same as old gen cost. 
         )
 
-
         image_bytes = base64.b64decode(img.data[0].b64_json)
-        sql_queries.log_cost(user_id, "image", IMG_COST)
+        log_cost(user_id, "image", IMG_COST)
         return image_bytes, None
     
     except Exception as err:
