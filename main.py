@@ -16,14 +16,13 @@ import gifgenerate
 import twitch_random
 import weather
 import chatgpt_api
-import sql_queries
-import mc_server
 import reset_db
 import random
 import math
 import io
 import uuid
 from cards import Deck, Card
+from sql_orm import engine, Base, log_command, apply_roll, get_command_usage, reset_rolls, get_boga_bucks, add_boga_bucks, get_leaderboard, generate_user_bill, generate_statement
 
 pst = timezone(timedelta(hours=-8))
 intents = discord.Intents.all()
@@ -68,15 +67,9 @@ async def echo(ctx, *, args):
     else:
       await ctx.send('it broke')
 
-@bot.hybrid_command(name="minecraft", description="Check the status of the Wack Wrappers minecraft server.")
-async def minecraft(ctx):
-  response = mc_server.get_details()
-  await ctx.send(response)
-
 @bot.hybrid_command(name="help", description="a helpful command")
 async def help(ctx):
   await ctx.send('ask <@{0}>'.format(consts.ALEX_ID))
-
 
 @bot.hybrid_command(name="urban", description="define a word")
 async def urban(ctx, term: str = commands.parameter(default="", description="type any word or phrase")):
@@ -85,7 +78,7 @@ async def urban(ctx, term: str = commands.parameter(default="", description="typ
     try:
       result = urban_dict.define(term)
       await ctx.send(result)
-      sql_queries.log_command("urban")
+      log_command("urban")
     except:
       await ctx.send("I don't know what {0} is".format(term))
   else:
@@ -96,20 +89,20 @@ async def urban(ctx, term: str = commands.parameter(default="", description="typ
 async def randword(ctx):
   result = urban_dict.random()
   await ctx.send(result)
-  sql_queries.log_command("randword")
+  log_command("randword")
 
 
 @bot.hybrid_command(name="wordoftheday", description="daily word")
 async def wordoftheday(ctx):
   result = urban_dict.word_of_the_day()
   await ctx.send(result)
-  sql_queries.log_command("wordoftheday")
+  log_command("wordoftheday")
 
 
 @bot.hybrid_command(name="meme", description="Watch this video.")
 async def meme_video(ctx):
   await ctx.send("https://www.instagram.com/p/Ct_icUhuYn7/")
-  sql_queries.log_command("meme")
+  log_command("meme")
 
 
 @bot.hybrid_command(name="japan", description="wack wrapper japan countdown")
@@ -117,7 +110,7 @@ async def japan(ctx):
   days, hours, minutes, seconds = japan_cmd.countdown(datetime(2025, 1, 1, tzinfo=pst))
   msg = "{0} days, {1} hours, {2} minutes, {3} seconds till Japan :airplane: :flag_jp:".format(days, hours, minutes, seconds)
   await ctx.send(msg)
-  sql_queries.log_command("japan")
+  log_command("japan")
 
 
 @bot.hybrid_command(name="bye-wayne", description="wack wrapper wayne exit countdown")
@@ -125,7 +118,7 @@ async def wayne(ctx):
   days, hours, minutes, seconds = japan_cmd.countdown(datetime(2024, 8, 11, tzinfo=pst))
   msg = "{0} days, {1} hours, {2} minutes, {3} seconds till Wayne fricks himself in Misery :student: :pill: ".format(days, hours, minutes, seconds)
   await ctx.send(msg)
-  sql_queries.log_command("bye-wayne")
+  log_command("bye-wayne")
 
 
 @bot.hybrid_command(name="uptime", description="time when bot started")
@@ -137,21 +130,21 @@ async def uptime(ctx):
   minutes, seconds = divmod(rem, 60)
   diff_str = "{0} days, {1} hours, {2} minutes, {3} seconds".format(days, hours, minutes, seconds)
   await ctx.send("I was started at `{0}`.\nI've been up for `{1}`.".format(start_time, diff_str))
-  sql_queries.log_command("uptime")
+  log_command("uptime")
 
 
 @bot.hybrid_command(name="ask", description="truthfully answers a question with yes or no")
 async def ask(ctx, question: str):
   res = ask_cmd.ask(question)
   await ctx.send(res)
-  sql_queries.log_command("ask")
+  log_command("ask")
 
 
 @bot.hybrid_command(name="boba", description="Calculate price based off boba")
 async def boba(ctx, value: str):
   res = boba_math.calc(value)
   await ctx.send(res)
-  sql_queries.log_command("boba")
+  log_command("boba")
 
 
 @bot.hybrid_command(name="yt-trending", description="#1 trending video on youtube")
@@ -159,21 +152,21 @@ async def yt_trending(ctx):
   res = youtube.get_trending()
   msg = "The #1 trending video on youtube is:\n{0}".format(res)
   await ctx.send(msg)
-  sql_queries.log_command("yt-trending")
+  log_command("yt-trending")
 
 
 @bot.hybrid_command(name="uwu", description="uwuify sentence given in user response.")
 async def uwu(ctx, *, args):
   res = uwuify.uwuify(args)
   await ctx.send(res)
-  sql_queries.log_command("uwu")
+  log_command("uwu")
 
 
 @bot.hybrid_command(name="twitch-streamer", description="Give you a random streamer currently live on Twitch.")
 async def twitch_streamer(ctx):
   res = twitch_random.generate_channel()
   await ctx.send(res)
-  sql_queries.log_command("twitch-streamer")
+  log_command("twitch-streamer")
 
 
 @bot.hybrid_command(name="weather", description="Get the current weather in a specific location.")
@@ -186,7 +179,7 @@ async def current_weather(ctx, *, args):
   else:
     response = "{0}\nThe weather is currently [**{1}**](https:{2})".format(res, condition.upper(), icon)
     await ctx.send(response)
-    sql_queries.log_command("weather")
+    log_command("weather")
 
 
 @bot.hybrid_command(name="image", description="Generate an image based on a prompt. THIS COSTS MONEY.")
@@ -205,7 +198,7 @@ async def image(ctx, *, args):
   file = discord.File(io.BytesIO(response), filename=str(random_uuid) + ".png")
   await ctx.send(file=file)
 
-  sql_queries.log_command("image")
+  log_command("image")
   
 
 
@@ -227,24 +220,24 @@ async def bill(ctx, user: discord.Member=None, month: int=None, year: int=None):
     await ctx.send("Please send a valid date.")
     return
 
-  response = sql_queries.generate_user_bill(user_id, month, year)
+  response = generate_user_bill(user_id, month, year)
   
   await ctx.send(response)
-  sql_queries.log_command("bill")
+  log_command("bill")
 
 
 @bot.hybrid_command(name="usage", description="Check usage of commands of Boga bot so far.")
 async def usage(ctx):
   await ctx.defer()
-  res = sql_queries.get_command_usage()
+  res = get_command_usage()
   await ctx.send(res)
-  sql_queries.log_command("usage")
+  log_command("usage")
 
 
 @bot.hybrid_command(name="goon", description="Enter the gooniverse")
 async def goon(ctx):
   await ctx.send("https://tenor.com/view/jarvis-iron-man-goon-gif-5902471035652079804")
-  sql_queries.log_command("goon")
+  log_command("goon")
 
 @bot.hybrid_command(name="jiawei", description="Where's the japan video Jiawei?")
 async def roast_jiawei(ctx):
@@ -252,7 +245,7 @@ async def roast_jiawei(ctx):
   today = date.today()
 
   num_days = abs((today - japan_return_date).days)
-  sql_queries.log_command("jiawei")
+  log_command("jiawei")
   await ctx.send("It's been about {0} days that <@!{1}> has stalled making the Japan video :JiaweiOOO:".format(num_days, consts.JIAWEI_ID))
   
 
@@ -262,21 +255,21 @@ async def roll(ctx):
     await ctx.send("You cannot roll for Boga Bucks, finish the Japan video first <@!{0}>!!".format(consts.JIAWEI_ID))
     return
   random_number = random.randint(0, 5)
-  response = sql_queries.apply_roll(ctx.author.id, random_number)
+  response = apply_roll(ctx.author.id, random_number)
   await ctx.send(response)
-  sql_queries.log_command("roll")
+  log_command("roll")
 
 @bot.hybrid_command(name="boga-wallet", description="Check your Boga Bucks balance.")
 async def boga_wallet(ctx):
-  balance = sql_queries.get_boga_bucks(ctx.author.id)
+  balance = get_boga_bucks(ctx.author.id)
   await ctx.send("You have {0} Boga Bucks!".format(balance))
-  sql_queries.log_command("boga-wallet")
+  log_command("boga-wallet")
 
 @bot.hybrid_command(name="boga-board", description="Top boga buck farmers.")
 async def boga_board(ctx):
-  response = sql_queries.get_leaderboard()
+  response = get_leaderboard()
   await ctx.send(response, allowed_mentions=discord.AllowedMentions.none())
-  sql_queries.log_command("boga-board")
+  log_command("boga-board")
 
 def is_boga_bot_chat():
     async def predicate(ctx):
@@ -299,7 +292,7 @@ async def ride_the_bus(ctx, bet: int):
     return
 
   bet = math.ceil(bet) 
-  balance = sql_queries.get_boga_bucks(ctx.author.id)
+  balance = get_boga_bucks(ctx.author.id)
   if bet < 1 or bet > balance:
     await ctx.send("You do not have enough to bet that much. You have {0} Boga Bucks.".format(balance))
     return
@@ -326,7 +319,7 @@ async def ride_the_bus(ctx, bet: int):
 
   suit_match = {"hearts": "♥️", "diamonds": "♦️", "clubs": "♣️", "spades": "♠️"}
 
-  sql_queries.add_boga_bucks(ctx.author.id, -bet) # subtract bet from balance.
+  add_boga_bucks(ctx.author.id, -bet) # subtract bet from balance.
 
   messages = []
   
@@ -453,8 +446,8 @@ async def ride_the_bus(ctx, bet: int):
       messages.append(new_msg)
       break
   
-  sql_queries.add_boga_bucks(ctx.author.id, winnings)
-  await ctx.send("<@!{0}>\n You finished gambling! You now have {1} Boga Bucks.".format(ctx.author.id, sql_queries.get_boga_bucks(ctx.author.id)))
+  add_boga_bucks(ctx.author.id, winnings)
+  await ctx.send("<@!{0}>\n You finished gambling! You now have {1} Boga Bucks.".format(ctx.author.id, get_boga_bucks(ctx.author.id)))
 
   await asyncio.sleep(20)
   for msg in messages:
@@ -462,22 +455,22 @@ async def ride_the_bus(ctx, bet: int):
     to_delete = await ctx.fetch_message(message_id)
     await to_delete.delete()
     
-  sql_queries.log_command("ride-the-bus")
+  log_command("ride-the-bus")
 
 @bot.hybrid_command(name="features", description="Request a feature for the bot.")
 async def features(ctx):
   await ctx.send("Check https://github.com/jycor/boga_bot/issues for feature requests. You can also ping Alex.")
-  sql_queries.log_command("features")
+  log_command("features")
 
 @bot.hybrid_command(name="laugh", description="Minion laugh.")
 async def laugh(ctx):
   await ctx.send("https://tenor.com/view/minion-minion-laughing-minion-popcorn-wriogifs-gif-10648794811524455015")
-  sql_queries.log_command("laugh")
+  log_command("laugh")
 
 @bot.hybrid_command(name="blaugh", description="Minion laugh 4K 1440P.")
 async def blaugh(ctx):
   await ctx.send("https://tenor.com/view/bahaha-lol-hd-gif-minion-minion-laugh-gif-2154867417577880306")
-  sql_queries.log_command("blaugh")
+  log_command("blaugh")
 
 @bot.event
 async def on_message(message):
@@ -511,13 +504,13 @@ async def on_message(message):
         await message.channel.send("Cleared chat history.")
       return
     case "/statement":
-      response = sql_queries.generate_statement()
+      response = generate_statement()
       await message.channel.send(response)
       return
     case "/reset": # in case daily task fails to run. 
       ctx = await bot.get_context(message)
       if ctx.author.id == consts.ALEX_ID or ctx.author.id == consts.JAMES_ID:
-        sql_queries.reset_rolls()
+        reset_rolls()
         await message.channel.send("Reset time, everyone can reroll again!")
       return
   
@@ -549,7 +542,7 @@ async def on_message(message):
       await message.channel.send(response[i:i+chatgpt_api.DISCORD_MSG_LIMIT], reference=message)
       await asyncio.sleep(0.5) # delay to make it feel more natural; can remove
   
-  sql_queries.log_command("chatgpt")
+  log_command("chatgpt")
   
-
+Base.metadata.create_all(engine) # essentially creates new tables if they do not exist. 
 bot.run(consts.API_KEY)
