@@ -474,8 +474,20 @@ async def blaugh(ctx):
 
 @bot.event
 async def on_message(message):
-  # ignore messages from the bot
+  
+  
   if message.author.bot:
+    if message.type == discord.MessageType.chat_input_command and message.author.name == "Wordle":
+      user_id = message.interaction_metadata.user.id
+      ctx = await bot.get_context(message)
+      print("Getting content below...\n")
+      print(message.components)
+      print(message)
+      # Need to make it so that this only adds to boga_bucks on first time they use the command for the day. 
+      await ctx.send("<@!{0}> shared their shitty score...".format(user_id))
+      return
+  
+  else:
     return
   
   # possible text commands
