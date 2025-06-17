@@ -3,7 +3,7 @@ from discord.ext import commands
 from discord import File
 from datetime import datetime, timezone, timedelta, date
 import asyncio
-
+import re
 import consts
 import ask_cmd
 import urban_dict
@@ -476,6 +476,27 @@ async def blaugh(ctx):
 async def on_message(message):
   # ignore messages from the bot
   if message.author.bot:
+    return
+
+  # change this to wordle ID. 
+  if message.author.id == consts.ALEX_ID:
+    if "Here are yesterday's results" in message.content:
+      cleaned = message.content.split("\n")
+      
+      guild_id = message.guild.id
+      guild = bot.get_guild(guild_id) # get the guild object so we can go through all members, and try to search for them when looking up 
+
+      for i in range(1, len(cleaned)):
+        curr_row = cleaned[i]
+        pattern = r'@[\w\- ]+|<@[\d]+>' # regex pattern is jank cause emojis mess it up and there could be @'s within the username itself. 
+        matches = re.findall(pattern, curr_row)
+        
+        for user in matches:
+          if user.startswith("<@") and user.endswith(">"):
+            user_id = int(user[2:-1])
+          elif user.startswith("@"):
+            curr_user = user[1:]
+            
     return
   
   # possible text commands
