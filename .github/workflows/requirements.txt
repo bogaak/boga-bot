@@ -28,7 +28,7 @@ multidict==6.1.0
 openai==1.58.1
 propcache==0.2.1
 proto-plus==1.25.0
-protobuf==5.29.2
+protobuf==5.29.5
 pyasn1==0.6.1
 pyasn1_modules==0.4.1
 pydantic==2.10.4
