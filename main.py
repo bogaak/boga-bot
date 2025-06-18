@@ -494,8 +494,8 @@ async def on_message(message):
       await ctx.send("<@!{0}>. {1}".format(user_id, response))
       return
   
-  else:
-    return
+    else:
+      return
   
   # possible text commands
   cmd = message.content.split(" ")[0]
