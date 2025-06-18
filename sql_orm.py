@@ -1,12 +1,10 @@
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker, declarative_base
-from models import Boga_Bucks, Costs, Track_Roll, Usage
+from models import Boga_Bucks, Costs, Track_Roll, Usage, Track_Wordle
 from datetime import datetime
 
 PROG_CHR = "*"
 MISS_CHR = "-"
-
-Base = declarative_base()
 
 engine = create_engine("sqlite:///boga.db")  # echo=True for debugging
 
@@ -53,6 +51,47 @@ def apply_roll(user_id: int, roll: int):
     session.close()
     return return_message
 
+def apply_wordle_score(user_id: int, score: int):
+    session = Session()
+
+    curr_user = session.query(Track_Wordle).filter(Track_Wordle.user_id == user_id).first()
+    
+    return_message = ""
+    # curr_user is None if the user hasn't shared wordle scores yet.
+    if not curr_user:
+        new_user = Track_Wordle(user_id=user_id, checked=1)
+        session.add(new_user)
+        session.commit()
+        
+        # check if user exists in boga_bucks table, if not, create it. 
+        user_bucks = session.query(Boga_Bucks).filter(Boga_Bucks.user_id == user_id).first()
+
+        if not user_bucks:
+            add_score = Boga_Bucks(user_id=user_id, boga_bucks=score)
+            session.add(add_score)
+            session.commit()
+        else:
+            user_bucks.boga_bucks += score
+            session.commit()
+
+        return_message = "You earned `{}` Boga Bucks!".format(score)
+
+    else:
+        if curr_user.checked == 1: # User exists, has previously rolled today. 
+            return_message = "You already logged your score today. Try again after reset! (12:00am PST)"
+        else: # User exists, but didn't roll today. 
+            curr_user.checked = 1
+            session.commit()
+
+            user_bucks = session.query(Boga_Bucks).filter(Boga_Bucks.user_id == user_id).first()
+            user_bucks.boga_bucks += score
+            session.commit()
+
+            return_message = "You earned `{}` Boga Bucks!".format(score)
+        
+    session.close()
+    return return_message
+
 def reset_rolls():
     session = Session()
 
@@ -64,6 +103,14 @@ def reset_rolls():
     session.commit()
 
     session.query(Track_Roll).update({Track_Roll.roll: 0})
+    session.commit()
+
+    session.close()
+
+def reset_wordle():
+    session = Session()
+
+    session.query(Track_Wordle).update({Track_Wordle.checked: 0})
     session.commit()
 
     session.close()

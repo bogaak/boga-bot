@@ -21,8 +21,9 @@ import random
 import math
 import io
 import uuid
-from cards import Deck, Card
-from sql_orm import engine, Base, log_command, apply_roll, get_command_usage, reset_rolls, get_boga_bucks, add_boga_bucks, get_leaderboard, generate_user_bill, generate_statement
+from cards import Deck
+from sql_orm import engine, log_command, apply_roll, get_command_usage, reset_rolls, get_boga_bucks, add_boga_bucks, get_leaderboard, generate_user_bill, generate_statement, apply_wordle_score, reset_wordle
+from models import Base
 
 pst = timezone(timedelta(hours=-8))
 intents = discord.Intents.all()
@@ -474,9 +475,27 @@ async def blaugh(ctx):
 
 @bot.event
 async def on_message(message):
-  # ignore messages from the bot
+  
+  
   if message.author.bot:
-    return
+    if message.type == discord.MessageType.chat_input_command and message.author.name == "Wordle":
+      user_id = message.interaction_metadata.user.id
+      ctx = await bot.get_context(message)
+
+      # Wordle message could be either before or after user completes the game. 
+      wordle_content = message.components[0].children[0].content.split("\n")[0]
+      wordle_score = wordle_content.split(" ")[-1][0] # get the last word in the string, which is the score.
+      
+      if wordle_score == "X": # if the user did not complete the game, do not give them any score.
+        wordle_score = 7
+      boga_bucks_earned = 7 - int(wordle_score)
+      response = apply_wordle_score(user_id, boga_bucks_earned) # apply the score to the user.
+
+      await ctx.send("<@!{0}>. {1}".format(user_id, response))
+      return
+  
+    else:
+      return
   
   # possible text commands
   cmd = message.content.split(" ")[0]
