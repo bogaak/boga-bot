@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, Text, REAL, Index
+from sqlalchemy import Column, Integer, Text, REAL, Index
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
@@ -26,3 +26,8 @@ class Usage(Base):
     __tablename__ = "usage"
     command = Column(Text, primary_key=True)
     count = Column(Integer)
+
+class Track_Wordle(Base):
+    __tablename__ = "track_wordle"
+    user_id = Column(Integer, primary_key=True)
+    checked = Column(Integer)

@@ -1,8 +1,8 @@
 from discord.ext import tasks
 from zoneinfo import ZoneInfo
-from datetime import datetime, timedelta, time
+from datetime import time
 import consts
-from sql_orm import reset_rolls
+from sql_orm import reset_rolls, reset_wordle
 
 
 pst = ZoneInfo(key='America/Los_Angeles')
@@ -19,5 +19,6 @@ daily_msg_time = time(hour=0, tzinfo=pst)
 async def reset_db_task(bot):
   ctx = bot.get_channel(consts.GENERAL_CH_ID) # Change this to real channel to send message to. 
   reset_rolls()
+  reset_wordle()
   await ctx.send("Reset time, everyone can reroll again!")
   # reset db logic here, every day it will reset db at 12:00am PST. 

@@ -21,8 +21,9 @@ import random
 import math
 import io
 import uuid
-from cards import Deck, Card
-from sql_orm import engine, Base, log_command, apply_roll, get_command_usage, reset_rolls, get_boga_bucks, add_boga_bucks, get_leaderboard, generate_user_bill, generate_statement
+from cards import Deck
+from sql_orm import engine, log_command, apply_roll, get_command_usage, reset_rolls, get_boga_bucks, add_boga_bucks, get_leaderboard, generate_user_bill, generate_statement, apply_wordle_score, reset_wordle
+from models import Base
 
 pst = timezone(timedelta(hours=-8))
 intents = discord.Intents.all()
@@ -480,11 +481,20 @@ async def on_message(message):
     if message.type == discord.MessageType.chat_input_command and message.author.name == "Wordle":
       user_id = message.interaction_metadata.user.id
       ctx = await bot.get_context(message)
-      print("Getting content below...\n")
-      print(message.components)
-      print(message)
+
+
+      # Need to do a check if user has already done /share successfully today. If they failed and tried /share, it shouldn't block them. 
+      # Below is the proper check for 
+      # Wordle message could be either before or after user completes the game. 
+      wordle_content = message.components[0].children[0].content.split("\n")[0]
+      wordle_score = wordle_content.split(" ")[-1][0] # get the last word in the string, which is the score.
+      
+      boga_bucks_earned = 7 - int(wordle_score)
+      response = apply_wordle_score(user_id, boga_bucks_earned) # apply the score to the user.
+
       # Need to make it so that this only adds to boga_bucks on first time they use the command for the day. 
-      await ctx.send("<@!{0}> shared their shitty score...".format(user_id))
+      await ctx.send("<@!{0}>. {1}".format(user_id, response))
+
       return
   
   else:
