@@ -482,19 +482,16 @@ async def on_message(message):
       user_id = message.interaction_metadata.user.id
       ctx = await bot.get_context(message)
 
-
-      # Need to do a check if user has already done /share successfully today. If they failed and tried /share, it shouldn't block them. 
-      # Below is the proper check for 
       # Wordle message could be either before or after user completes the game. 
       wordle_content = message.components[0].children[0].content.split("\n")[0]
       wordle_score = wordle_content.split(" ")[-1][0] # get the last word in the string, which is the score.
       
+      if wordle_score == "X": # if the user did not complete the game, do not give them any score.
+        wordle_score = 7
       boga_bucks_earned = 7 - int(wordle_score)
       response = apply_wordle_score(user_id, boga_bucks_earned) # apply the score to the user.
 
-      # Need to make it so that this only adds to boga_bucks on first time they use the command for the day. 
       await ctx.send("<@!{0}>. {1}".format(user_id, response))
-
       return
   
   else:
