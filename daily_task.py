@@ -11,13 +11,13 @@ import weather
 import asyncio
 
 pst = ZoneInfo(key='America/Los_Angeles')
-# daily_msg_time = time(hour=8, tzinfo=pst)
+daily_msg_time = time(hour=8, tzinfo=pst)
 
 DISCORD_MSG_LIMIT = 2000
 
 # USE THIS FOR TESTING
-dt = datetime.now() + timedelta(seconds=10)
-daily_msg_time = time(hour=dt.hour, minute=dt.minute, second=dt.second, tzinfo=pst)
+# dt = datetime.now() + timedelta(seconds=10)
+# daily_msg_time = time(hour=dt.hour, minute=dt.minute, second=dt.second, tzinfo=pst)
 
 # ANOTHER DEBUG METHOD IN CASE ABOVE NOT WORKING: 
 # @tasks.loop(seconds=5.0)
@@ -44,7 +44,6 @@ async def send_daily_msg(bot):
     await ctx.send(msg[i:i+DISCORD_MSG_LIMIT])
     await asyncio.sleep(0.5) # delay to make it feel more natural; can remove
   
-  # await ctx.send(msg)
   await ctx.send(gif_url)
 
   if not err and not j_err:
