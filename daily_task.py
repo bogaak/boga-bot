@@ -8,21 +8,23 @@ import youtube
 import urban_dict
 import gifgenerate
 import weather
+import asyncio
 
 pst = ZoneInfo(key='America/Los_Angeles')
-daily_msg_time = time(hour=8, tzinfo=pst)
+# daily_msg_time = time(hour=8, tzinfo=pst)
 
+DISCORD_MSG_LIMIT = 2000
 
 # USE THIS FOR TESTING
-# dt = datetime.now() + timedelta(seconds=10)
-# daily_msg_time = time(hour=dt.hour, minute=dt.minute, second=dt.second, tzinfo=pst)
+dt = datetime.now() + timedelta(seconds=10)
+daily_msg_time = time(hour=dt.hour, minute=dt.minute, second=dt.second, tzinfo=pst)
 
 # ANOTHER DEBUG METHOD IN CASE ABOVE NOT WORKING: 
 # @tasks.loop(seconds=5.0)
 
 @tasks.loop(time=daily_msg_time)
 async def send_daily_msg(bot):
-  ctx = bot.get_channel(consts.GENERAL_CH_ID)
+  ctx = bot.get_channel(consts.DEBUG_CH_ID)
 
   urban_dict.reset_word_of_the_day()
 
@@ -37,7 +39,12 @@ async def send_daily_msg(bot):
   msg = "{0}\n{1}\n{2}\n{3}\n{4}\n\n\n{5}".format(greeting, daily_word_msg, daily_yt_vid, daily_weather, daily_james_weather, jiawei_roast)
   gif_url = gifgenerate.generate_gif()
 
-  await ctx.send(msg)
+  for i in range(0, len(msg), DISCORD_MSG_LIMIT):
+    
+    await ctx.send(msg[i:i+DISCORD_MSG_LIMIT])
+    await asyncio.sleep(0.5) # delay to make it feel more natural; can remove
+  
+  # await ctx.send(msg)
   await ctx.send(gif_url)
 
   if not err and not j_err:
