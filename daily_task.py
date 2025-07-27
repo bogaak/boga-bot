@@ -24,7 +24,7 @@ DISCORD_MSG_LIMIT = 2000
 
 @tasks.loop(time=daily_msg_time)
 async def send_daily_msg(bot):
-  ctx = bot.get_channel(consts.DEBUG_CH_ID)
+  ctx = bot.get_channel(consts.GENERAL_CH_ID)
 
   urban_dict.reset_word_of_the_day()
 
