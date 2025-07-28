@@ -8,10 +8,12 @@ import youtube
 import urban_dict
 import gifgenerate
 import weather
+import asyncio
 
 pst = ZoneInfo(key='America/Los_Angeles')
 daily_msg_time = time(hour=8, tzinfo=pst)
 
+DISCORD_MSG_LIMIT = 2000
 
 # USE THIS FOR TESTING
 # dt = datetime.now() + timedelta(seconds=10)
@@ -37,7 +39,11 @@ async def send_daily_msg(bot):
   msg = "{0}\n{1}\n{2}\n{3}\n{4}\n\n\n{5}".format(greeting, daily_word_msg, daily_yt_vid, daily_weather, daily_james_weather, jiawei_roast)
   gif_url = gifgenerate.generate_gif()
 
-  await ctx.send(msg)
+  for i in range(0, len(msg), DISCORD_MSG_LIMIT):
+    
+    await ctx.send(msg[i:i+DISCORD_MSG_LIMIT])
+    await asyncio.sleep(0.5) # delay to make it feel more natural; can remove
+  
   await ctx.send(gif_url)
 
   if not err and not j_err:
