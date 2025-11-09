@@ -54,7 +54,6 @@ def gen_image_gpt(user_id: int, query: str):
             prompt=query,
             n=1,
             size="1024x1024",
-            moderation="low",
             quality="low", # medium is pretty much same as old gen cost. 
         )
 
@@ -63,4 +62,22 @@ def gen_image_gpt(user_id: int, query: str):
         return image_bytes, None
     
     except Exception as err:
+        if hasattr(err, 'status_code') and err.status_code == 400:
+            # Try to get the error code from the body
+            error_code = None
+            
+            # Check if code is directly accessible
+            if hasattr(err, 'code') and err.code:
+                error_code = err.code
+            
+            # Otherwise, extract from body['error']['code']
+            elif hasattr(err, 'body') and isinstance(err.body, dict):
+                error_info = err.body.get('error', {})
+                if isinstance(error_info, dict):
+                    error_code = error_info.get('code')
+            
+            # Handle specific error codes
+            if error_code == 'moderation_blocked':
+                return "That request was haram :pig: :x:, please don't ask me that again.", err
+        
         return "There was an error generating your image, please try again later.", err
