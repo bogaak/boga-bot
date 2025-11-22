@@ -26,7 +26,7 @@ async def generate_chatgpt_response(user_id: int, query: str):
         chat_history.append(user_query)
 
         gpt_response = client.chat.completions.create(
-            model="gpt-4.1-nano",
+            model="gpt-5-nano",
             messages=chat_history,
         )
 
