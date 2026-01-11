@@ -21,6 +21,7 @@ import random
 import math
 import io
 import uuid
+import sheets
 from cards import Deck
 from sql_orm import engine, log_command, apply_roll, get_command_usage, reset_rolls, get_boga_bucks, add_boga_bucks, get_leaderboard, generate_user_bill, generate_statement, apply_wordle_score, reset_wordle
 from models import Base
@@ -472,6 +473,12 @@ async def laugh(ctx):
 async def blaugh(ctx):
   await ctx.send("https://tenor.com/view/bahaha-lol-hd-gif-minion-minion-laugh-gif-2154867417577880306")
   log_command("blaugh")
+
+@bot.hybrid_command(name="predictions", description="Check the predictions for the next year.")
+async def predict(ctx):
+  response = sheets.get_response()
+  await ctx.send(response)
+  log_command("predictions")
 
 @bot.event
 async def on_message(message):
