@@ -30,22 +30,18 @@ async def send_daily_msg(bot):
 
   greeting = "Good morning everyone!"
   daily_word_msg = "The Word of the Day is:\n{0}".format(urban_dict.word_of_the_day())
-  daily_yt_vid = "The #1 trending video on YouTube is:\n{0}".format(youtube.get_trending())
   res, condition, _, err = weather.get_weather("Chino")
   daily_weather = "{0} Currently it is {1}.".format(res, condition)
   j_res, j_condition, _, j_err = weather.get_weather("Los Angeles")
   daily_james_weather = "For James, {0} Currently it is {1} :) .".format(j_res, j_condition)
   jiawei_roast = "<@!{0}>, for the love of god, please finish the fucking Japan video.".format(JIAWEI_ID)
-  msg = "{0}\n{1}\n{2}\n{3}\n{4}\n\n\n{5}".format(greeting, daily_word_msg, daily_yt_vid, daily_weather, daily_james_weather, jiawei_roast)
-  gif_url = gifgenerate.generate_gif()
+  msg = "{0}\n{1}\n{2}\n{3}\n{4}".format(greeting, daily_word_msg, daily_weather, daily_james_weather, jiawei_roast)
 
   for i in range(0, len(msg), DISCORD_MSG_LIMIT):
     
     await ctx.send(msg[i:i+DISCORD_MSG_LIMIT])
     await asyncio.sleep(0.5) # delay to make it feel more natural; can remove
   
-  await ctx.send(gif_url)
-
   if not err and not j_err:
     return
   
