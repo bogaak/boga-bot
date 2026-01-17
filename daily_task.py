@@ -35,7 +35,8 @@ async def send_daily_msg(bot):
   j_res, j_condition, _, j_err = weather.get_weather("Los Angeles")
   daily_james_weather = "For James, {0} Currently it is {1} :) .".format(j_res, j_condition)
   jiawei_roast = "<@!{0}>, for the love of god, please finish the fucking Japan video.".format(JIAWEI_ID)
-  msg = "{0}\n{1}\n{2}\n{3}\n{4}".format(greeting, daily_word_msg, daily_weather, daily_james_weather, jiawei_roast)
+  sheet_update = "Please make sure to update the predictions, beer, and hangout sheets! :heart:"
+  msg = "{0}\n{1}\n{2}\n{3}\n{4}\n{5}".format(greeting, daily_word_msg, daily_weather, daily_james_weather, jiawei_roast, sheet_update)
 
   for i in range(0, len(msg), DISCORD_MSG_LIMIT):
     
