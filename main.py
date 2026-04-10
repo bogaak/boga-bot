@@ -109,8 +109,11 @@ async def meme_video(ctx):
 
 @bot.hybrid_command(name="japan", description="wack wrapper japan countdown")
 async def japan(ctx):
-  days, hours, minutes, seconds = japan_cmd.countdown(datetime(2025, 1, 1, tzinfo=pst))
-  msg = "{0} days, {1} hours, {2} minutes, {3} seconds till Japan :airplane: :flag_jp:".format(days, hours, minutes, seconds)
+  japan_return_date = date(2023, 9, 7)
+  today = date.today()
+
+  num_days = abs((today - japan_return_date).days)
+  msg = f"It's been {num_days} days since the last Wack Wrapper Japan trip. :("
   await ctx.send(msg)
   log_command("japan")
 
