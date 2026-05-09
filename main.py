@@ -125,6 +125,12 @@ async def wayne(ctx):
   await ctx.send(msg)
   log_command("bye-wayne")
 
+@bot.hybrid_command(name="tadc", description="When will our most favorite movie come out?")
+async def tadc(ctx):
+  days, hours, minutes, seconds = japan_cmd.countdown(datetime(2026, 6, 4, tzinfo=pst))
+  msg = "{0} days, {1} hours, {2} minutes, {3} seconds till Jiawei gets his favorite movie of all time!![!](https://klipy.com/gifs/tadc-the-amazing-digital-circus-96--k01KR4DF32MW48VHZ3VFCHMBWKQ) :circus_tent: :clown:".format(days, hours, minutes, seconds)
+  await ctx.send(msg)
+  log_command("tadc")
 
 @bot.hybrid_command(name="uptime", description="time when bot started")
 async def uptime(ctx):
