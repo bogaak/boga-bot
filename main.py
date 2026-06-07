@@ -25,6 +25,9 @@ import sheets
 from cards import Deck
 from sql_orm import engine, log_command, apply_roll, get_command_usage, reset_rolls, get_boga_bucks, add_boga_bucks, get_leaderboard, generate_user_bill, generate_statement, apply_wordle_score, reset_wordle
 from models import Base
+from gemini_api import GeminiAPI
+
+DISCORD_MSG_LIMIT = 2000
 
 pst = timezone(timedelta(hours=-8))
 intents = discord.Intents.all()
@@ -32,6 +35,7 @@ intents.message_content = True
 bot = commands.Bot(command_prefix='/', intents=intents, help_command=None)
 
 debug_channel = None
+gemini_api = None
 
 @bot.event
 async def on_ready():
@@ -47,6 +51,10 @@ async def on_ready():
 
   global debug_channel
   debug_channel = bot.get_channel(consts.DEBUG_CH_ID)
+
+  global gemini_api
+  gemini_api = GeminiAPI()
+  
   await debug_channel.send("I am alive")
 
 
@@ -567,17 +575,17 @@ async def on_message(message):
 
   ctx = await bot.get_context(message)  
   async with ctx.typing():
-    response, err = await chatgpt_api.generate_chatgpt_response(message.author.id, message.content)
+    response, err = gemini_api.handle_chat(message.author.id, message.content)
     if err:
       global debug_channel
       await debug_channel.send("Error: {0}".format(err))
     
-  for i in range(0, len(response), chatgpt_api.DISCORD_MSG_LIMIT):
+  for i in range(0, len(response), DISCORD_MSG_LIMIT):
     async with ctx.typing():
-      await message.channel.send(response[i:i+chatgpt_api.DISCORD_MSG_LIMIT], reference=message)
+      await message.channel.send(response[i:i+DISCORD_MSG_LIMIT], reference=message)
       await asyncio.sleep(0.5) # delay to make it feel more natural; can remove
   
-  log_command("chatgpt")
+  log_command("gemini_chat")
   
 Base.metadata.create_all(engine) # essentially creates new tables if they do not exist. 
 bot.run(consts.API_KEY)

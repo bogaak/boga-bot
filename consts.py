@@ -11,6 +11,7 @@ API_KEY = os.environ['DISCORD_BOT_API_KEY']
 GIF_API_KEY = os.environ['GIF_API_KEY']
 WEATHER_API_KEY = os.environ['WEATHER_API_KEY']
 OPENAI_API_KEY = os.environ['OPENAI_API_KEY']
+GEMINI_API_KEY = os.environ['GEMINI_API_KEY']
 
 TWITCH_API_KEY = os.environ['TWITCH_API_KEY']
 TWITCH_SECRET = os.environ['TWITCH_SECRET']
