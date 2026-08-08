@@ -22,6 +22,7 @@ import math
 import io
 import uuid
 import sheets
+import patch_notes
 from cards import Deck
 from sql_orm import engine, log_command, apply_roll, get_command_usage, reset_rolls, get_boga_bucks, add_boga_bucks, get_leaderboard, generate_user_bill, generate_statement, apply_wordle_score, reset_wordle
 from models import Base
@@ -51,12 +52,14 @@ async def on_ready():
 
   global debug_channel
   debug_channel = bot.get_channel(consts.DEBUG_CH_ID)
+  main_channel = bot.get_channel(consts.GENERAL_CH_ID)
 
   global gemini_api
   gemini_api = GeminiAPI()
   
   await debug_channel.send("I am alive")
 
+  await main_channel.send(patch_notes.post_patch_notes())
 
 @bot.command()
 async def sync(ctx):
@@ -204,7 +207,7 @@ async def current_weather(ctx, *, args):
 @bot.hybrid_command(name="image", description="Generate an image based on a prompt. THIS COSTS MONEY.")
 async def image(ctx, *, args):
   await ctx.defer()
-  response, err = chatgpt_api.gen_image_gpt(ctx.author.id, args)
+  response, err = gemini_api.handle_image(ctx.author.id, args)
 
   if err:
     global debug_channel

@@ -1,5 +1,8 @@
+import base64
 from google import genai
+from google.genai import types
 from consts import GEMINI_API_KEY
+
 
 MAX_CHAT_LEN = 20
 
@@ -7,6 +10,7 @@ IMG_COST = 0.04
 INPUT_TOKEN_COST = 0.15 / 1_000_000
 OUTPUT_TOKEN_COST = 0.60 / 1_000_000
 
+# TODO: Add proper cost calculations. 
 class GeminiAPI:
     def __init__(self):
         self.client = genai.Client(api_key=GEMINI_API_KEY)
@@ -27,3 +31,13 @@ class GeminiAPI:
             return response.text, None
         except Exception as err:
             return "There was an issue with your query, please try again later.", err
+    
+    def handle_image(self, user_id: int, prompt: str):
+        # TODO: Add proper cost tracking and error handling. Too lazy to do now. Need to check response properly to get both of these. 
+        response = self.client.models.generate_content(
+            model="gemini-3.1-flash-image",
+            contents=[prompt],
+        )
+
+        image_bytes = response.candidates[0].content.parts[0].inline_data.data
+        return image_bytes, None
