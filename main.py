@@ -59,7 +59,7 @@ async def on_ready():
   
   await debug_channel.send("I am alive")
 
-  await main_channel.send(patch_notes.post_patch_notes())
+  # await main_channel.send(patch_notes.post_patch_notes())
 
 @bot.command()
 async def sync(ctx):
