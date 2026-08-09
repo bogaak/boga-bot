@@ -1,7 +1,7 @@
 services:
   discord-bot:
     build: .
-    pull_policy: always
+    pull_policy: build
     container_name: bogabot
     restart: unless-stopped
     env_file:
