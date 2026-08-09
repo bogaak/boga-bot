@@ -22,7 +22,7 @@ import math
 import io
 import uuid
 import sheets
-import patch_notes
+# import patch_notes
 from cards import Deck
 from sql_orm import engine, log_command, apply_roll, get_command_usage, reset_rolls, get_boga_bucks, add_boga_bucks, get_leaderboard, generate_user_bill, generate_statement, apply_wordle_score, reset_wordle
 from models import Base
