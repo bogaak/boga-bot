@@ -1,0 +1,12 @@
+services:
+  discord-bot:
+    build: .
+    container_name: bogabot
+    restart: unless-stopped
+    env_file:
+      - stack.env
+    volumes:
+      - data:/data
+
+volumes:
+  data:
