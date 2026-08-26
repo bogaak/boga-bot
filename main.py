@@ -3,6 +3,7 @@ from discord.ext import commands
 from discord import File
 from datetime import datetime, timezone, timedelta, date
 import asyncio
+import aiohttp
 
 import consts
 import ask_cmd
@@ -58,8 +59,6 @@ async def on_ready():
   gemini_api = GeminiAPI()
   
   await debug_channel.send("I am alive")
-
-  await main_channel.send(patch_notes.get_patch_notes())
 
 @bot.command()
 async def sync(ctx):
@@ -499,6 +498,19 @@ async def predict(ctx):
   response = sheets.get_response()
   await ctx.send(response)
   log_command("predictions")
+
+@bot.hybrid_command(name="avatar", description="Get a user's avatar")
+async def avatar(ctx, member: discord.Member = None):
+    user = member or ctx.author
+    avatar = user.display_avatar
+    if avatar.is_animated():
+      await ctx.send(avatar.url)
+    else:
+      avatar_bytes = await avatar.read()
+      file = discord.File(fp=io.BytesIO(avatar_bytes), filename="avatar.png")
+      embed = discord.Embed(title="User Avatar")
+      embed.set_image(url="attachment://avatar.png")
+      await ctx.send(file=file, embed=embed)
 
 @bot.event
 async def on_message(message):
