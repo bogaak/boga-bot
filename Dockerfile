@@ -1,16 +1,13 @@
-FROM python:3.12-slim
+FROM python:3.13-slim
 
 WORKDIR /data
 
-COPY requirements.txt .
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+RUN pip install uv
 
-# install git
-RUN apt-get update
-RUN apt-get install -y git
-
-# install python requirements
-RUN pip install --no-cache-dir -r requirements.txt
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-install-project
 
 COPY . .
 
-CMD ["python", "main.py"]
+CMD ["uv", "run", "main.py"]

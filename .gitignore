@@ -4,6 +4,7 @@ start.sh
 boga.db
 .venv
 .pytest_cache
+.env
 *.env
 pid.txt
 nohup.out

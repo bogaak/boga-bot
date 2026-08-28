@@ -60,6 +60,8 @@ async def on_ready():
   
   await debug_channel.send("I am alive")
 
+  await main_channel.send(patch_notes.get_patch_notes())
+
 @bot.command()
 async def sync(ctx):
   print("sync command")
